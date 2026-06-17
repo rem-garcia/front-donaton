@@ -9,6 +9,8 @@ import CoordinadorPanel from './pages/CoordinadorPanel'
 import VoluntarioPanel  from './pages/VoluntarioPanel'
 import DonadorPortal    from './pages/DonadorPortal'
 import Contacto from './pages/Contacto'
+import AdminUsuarios from './pages/AdminUsuarios'
+import AdminCentros  from './pages/AdminCentros'
 
 export default function App() {
   return (
@@ -28,6 +30,17 @@ export default function App() {
               <AdminDashboard />
             </ProtegeRutas>
           }/>
+          <Route path="/admin-usuarios" element={
+            <ProtegeRutas roles={['ADMIN']}>
+              <AdminUsuarios />
+            </ProtegeRutas>
+          }/>
+
+        <Route path="/admin-centros" element={
+          <ProtegeRutas roles={['ADMIN']}>
+            <AdminCentros />
+          </ProtegeRutas>
+        }/>
 
           {/* Admin y Coordinador */}
           <Route path="/coordinador" element={
