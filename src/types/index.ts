@@ -32,7 +32,7 @@ export interface Necesidad {
 }
 export interface Asignacion {
     id: number;
-    estado: 'ASIGNADA' | 'ENTREGADA' | 'EN TRANSITO';
+    estado: 'ASIGNADA' | 'ENTREGADA' | 'EN_TRANSITO';
     fechaCreacion: string;
     usuarioId: number;
     necesidadId: number;
