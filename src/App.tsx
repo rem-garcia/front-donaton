@@ -11,6 +11,8 @@ import DonadorPortal    from './pages/DonadorPortal'
 import Contacto from './pages/Contacto'
 import AdminUsuarios from './pages/AdminUsuarios'
 import AdminCentros  from './pages/AdminCentros'
+import Seguimiento from './pages/Seguimiento'
+
 
 export default function App() {
   return (
@@ -23,6 +25,7 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/donar" element={<DonadorPortal />} />
           <Route path="/contacto" element={<Contacto />} />
+          <Route path="/seguimiento" element={<Seguimiento />} />
 
           {/* Solo Admin */}
           <Route path="/admin" element={
