@@ -23,7 +23,7 @@ export default function Navbar() {
 
         {/* Logo */}
         <Link to="/" className="text-white text-xl font-bold tracking-widest">
-          DONATON
+          <img src="image/Donaton_Logo.png" alt="Donaton" className="w-45 h-20 inline-block mr-2 -mt-1"/>
         </Link>
 
         {/* Links — desktop */}

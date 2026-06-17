@@ -1,5 +1,8 @@
 import Navbar from '../components/Navbar'
 import Hero   from '../components/Hero'
+import ComoFunciona from '../components/ComoFunsiona'
+import MisionVision from '../components/MisionVision'
+import ColaboradoresCarrusel from '../components/Colaboradores'
 
 export default function Landing() {
   return (
@@ -7,6 +10,9 @@ export default function Landing() {
       <Navbar />
       <main>
         <Hero />
+        <ComoFunciona />
+        <MisionVision />
+        <ColaboradoresCarrusel />
       </main>
     </div>
   )
