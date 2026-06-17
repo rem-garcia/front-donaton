@@ -40,12 +40,13 @@ export default function Navbar() {
           >
             Impacto
           </a>
-          <a
-            href="#colaboradores"
+          <Link
+            to="/contacto"
             className="text-gray-300 hover:text-teal text-sm transition-colors duration-200"
           >
             Contacto
-          </a>
+          </Link>
+                
         </div>
 
         {/* Botón derecha — desktop */}
@@ -97,9 +98,13 @@ export default function Navbar() {
           <a href="#mision" className="text-gray-300 text-sm hover:text-teal">
             Impacto
           </a>
-          <a href="#colaboradores" className="text-gray-300 text-sm hover:text-teal">
+          <Link
+            to="/contacto"
+            className="text-gray-300 text-sm hover:text-teal"
+            onClick={() => setMenuAbierto(false)}
+            >
             Contacto
-          </a>
+            </Link>
           <button
             onClick={handleIngresar}
             className="bg-teal text-navy text-sm font-semibold px-5 py-2.5 rounded-lg w-full"

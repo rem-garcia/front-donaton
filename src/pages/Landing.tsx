@@ -3,6 +3,7 @@ import Hero   from '../components/Hero'
 import ComoFunciona from '../components/ComoFunsiona'
 import MisionVision from '../components/MisionVision'
 import ColaboradoresCarrusel from '../components/Colaboradores'
+import Footer from '../components/Footer'
 
 export default function Landing() {
   return (
@@ -13,6 +14,7 @@ export default function Landing() {
         <ComoFunciona />
         <MisionVision />
         <ColaboradoresCarrusel />
+        <Footer />
       </main>
     </div>
   )

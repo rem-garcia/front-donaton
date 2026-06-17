@@ -8,6 +8,7 @@ import AdminDashboard   from './pages/AdminDash'
 import CoordinadorPanel from './pages/CoordinadorPanel'
 import VoluntarioPanel  from './pages/VoluntarioPanel'
 import DonadorPortal    from './pages/DonadorPortal'
+import Contacto from './pages/Contacto'
 
 export default function App() {
   return (
@@ -19,6 +20,7 @@ export default function App() {
           <Route path="/"      element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/donar" element={<DonadorPortal />} />
+          <Route path="/contacto" element={<Contacto />} />
 
           {/* Solo Admin */}
           <Route path="/admin" element={
