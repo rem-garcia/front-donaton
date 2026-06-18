@@ -1,37 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { Donacion, Necesidad } from '../types'
 
-// Datos de ejemplo en memoria — se reemplazan con el backend
-const donacionesIniciales: Donacion[] = [
-  {
-    id: 1, tipo: 'Ropa', cantidad: 50, unidad: 'unidades', origen: 'Campaña Las Condes', estado: 'RECIBIDA', fechaCreacion: '2026-06-15', usuarioId: 2,
-    necesidadId: 0,
-    centroAcopioId: 0
-  },
-  {
-    id: 2, tipo: 'Alimentos', cantidad: 30, unidad: 'cajas', origen: 'Donante particular', estado: 'DISPONIBLE', fechaCreacion: '2026-06-16', usuarioId: 2,
-    necesidadId: 0,
-    centroAcopioId: 0
-  },
-  {
-    id: 3, tipo: 'Agua', cantidad: 200, unidad: 'litros', origen: 'Aguas Andinas', estado: 'ASIGNADA', fechaCreacion: '2026-06-17', usuarioId: 2, necesidadId: 3,
-    centroAcopioId: 0
-  },
-  {
-    id: 4, tipo: 'Frazadas', cantidad: 40, unidad: 'unidades', origen: 'Empresa textil', estado: 'ENTREGADA', fechaCreacion: '2026-06-12', usuarioId: 2,
-    necesidadId: 0,
-    centroAcopioId: 0
-  },
-]
+const API = import.meta.env.VITE_API_URL
 
-const necesidadesIniciales: Necesidad[] = [
-  { id: 1, categoria: 'Alimentos',     prioridad: 'CRITICA', comuna: 'Valparaíso',  cantRequerida: 100, cantCubierta: 30,  estado: 'ACTIVA',   fechaCreacion: '2026-06-14' },
-  { id: 2, categoria: 'Ropa de abrigo', prioridad: 'ALTA',   comuna: 'Concepción',  cantRequerida: 80,  cantCubierta: 0,   estado: 'ACTIVA',   fechaCreacion: '2026-06-15' },
-  { id: 3, categoria: 'Agua potable',   prioridad: 'MEDIA',  comuna: 'La Serena',   cantRequerida: 200, cantCubierta: 200, estado: 'CUBIERTA', fechaCreacion: '2026-06-13' },
-]
-
-// Colores por estado de donación
 const coloresEstado: Record<Donacion['estado'], string> = {
+  PENDIENTE:   'bg-gray-100 text-gray-600',
   RECIBIDA:    'bg-blue-100 text-blue-700',
   DISPONIBLE:  'bg-teal/20 text-teal',
   ASIGNADA:    'bg-amber-100 text-amber-700',
@@ -39,7 +12,6 @@ const coloresEstado: Record<Donacion['estado'], string> = {
   ENTREGADA:   'bg-green-100 text-green-700',
 }
 
-// Colores por prioridad de necesidad
 const coloresPrioridad: Record<Necesidad['prioridad'], string> = {
   CRITICA: 'bg-red-100 text-red-700',
   ALTA:    'bg-orange-100 text-orange-700',
@@ -48,79 +20,112 @@ const coloresPrioridad: Record<Necesidad['prioridad'], string> = {
 }
 
 export default function CoordinadorPanel() {
-  const [donaciones, setDonaciones]   = useState<Donacion[]>(donacionesIniciales)
-  const [necesidades, setNecesidades] = useState<Necesidad[]>(necesidadesIniciales)
-  // Donación que se está por asignar (controla el modal)
+  const [donaciones, setDonaciones]           = useState<Donacion[]>([])
+  const [necesidades, setNecesidades]         = useState<Necesidad[]>([])
+  const [cargando, setCargando]               = useState(true)
   const [donacionAsignar, setDonacionAsignar] = useState<Donacion | null>(null)
 
-  // RECIBIDA → DISPONIBLE
-  const verificar = (id: number) => {
-    setDonaciones(donaciones.map((d) =>
-      d.id === id ? { ...d, estado: 'DISPONIBLE' } : d
-    ))
+  useEffect(() => {
+    fetch(`${API}/api/donaciones`)
+      .then((r) => r.json())
+      .then((data) => setDonaciones(data))
+      .catch((e) => console.error('Error cargando donaciones:', e))
+      .finally(() => setCargando(false))
+
+    fetch(`${API}/api/necesidades`)
+      .then((r) => r.json())
+      .then((data) => setNecesidades(data))
+      .catch((e) => console.error('Error cargando necesidades:', e))
+  }, [])
+
+  const cambiarEstado = async (
+  id: number,
+  nuevoEstado: Donacion['estado'],
+  extra?: Record<string, unknown>
+) => {
+  try {
+    const res = await fetch(`${API}/api/donaciones/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nuevoEstado, ...extra }), // ← era 'estado', ahora 'nuevoEstado'
+    })
+
+    if (!res.ok) {
+      const data = await res.json()
+      throw new Error(data.error || 'Error al cambiar estado')
+    }
+
+    const actualizada: Donacion = await res.json()
+    setDonaciones((prev) =>
+      prev.map((d) => (d.id === actualizada.id ? actualizada : d))
+    )
+  } catch (e) {
+    console.error(e)
+    alert(e instanceof Error ? e.message : 'Error de conexión')
   }
+}
 
-  // DISPONIBLE → ASIGNADA (vincula a una necesidad y suma cobertura)
-  const asignar = (donacion: Donacion, necesidad: Necesidad) => {
-    setDonaciones(donaciones.map((d) =>
-      d.id === donacion.id
-        ? { ...d, estado: 'ASIGNADA', necesidadId: necesidad.id }
-        : d
-    ))
+  const verificar        = (id: number) => cambiarEstado(id, 'DISPONIBLE')
+  const marcarEnTransito = (id: number) => cambiarEstado(id, 'EN_TRANSITO')
+  const confirmarEntrega = (id: number) => cambiarEstado(id, 'ENTREGADA')
 
-    setNecesidades(necesidades.map((n) => {
-      if (n.id !== necesidad.id) return n
-      const nuevaCobertura = n.cantCubierta + donacion.cantidad
-      return {
-        ...n,
-        cantCubierta: nuevaCobertura,
-        estado: nuevaCobertura >= n.cantRequerida ? 'CUBIERTA' : n.estado,
-      }
-    }))
-
+  const asignar = async (donacion: Donacion, necesidad: Necesidad) => {
+    await cambiarEstado(donacion.id, 'ASIGNADA', { necesidadId: necesidad.id })
+    setNecesidades((prev) =>
+      prev.map((n) => {
+        if (n.id !== necesidad.id) return n
+        const nuevaCobertura = n.cantCubierta + donacion.cantidad
+        return {
+          ...n,
+          cantCubierta: nuevaCobertura,
+          estado: nuevaCobertura >= n.cantRequerida ? 'CUBIERTA' : n.estado,
+        }
+      })
+    )
     setDonacionAsignar(null)
   }
 
-  // ASIGNADA → ENTREGADA
-  const confirmarEntrega = (id: number) => {
-    setDonaciones(donaciones.map((d) =>
-      d.id === id ? { ...d, estado: 'ENTREGADA' } : d
-    ))
-  }
-
-  // Devuelve el botón de acción según el estado de la donación
   const accionPorEstado = (d: Donacion) => {
-    if (d.estado === 'RECIBIDA') {
-      return (
-        <button
-          onClick={() => verificar(d.id)}
-          className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-        >
-          Verificar
-        </button>
-      )
+    switch (d.estado) {
+      case 'RECIBIDA':
+        return (
+          <button
+            onClick={() => verificar(d.id)}
+            className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+          >
+            Verificar
+          </button>
+        )
+      case 'DISPONIBLE':
+        return (
+          <button
+            onClick={() => setDonacionAsignar(d)}
+            className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-teal text-navy hover:bg-teal/90 transition-colors"
+          >
+            Asignar
+          </button>
+        )
+      case 'ASIGNADA':
+        return (
+          <button
+            onClick={() => marcarEnTransito(d.id)}
+            className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-purple-600 text-white hover:bg-purple-700 transition-colors"
+          >
+            En tránsito
+          </button>
+        )
+      case 'EN_TRANSITO':
+        return (
+          <button
+            onClick={() => confirmarEntrega(d.id)}
+            className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors"
+          >
+            Confirmar entrega
+          </button>
+        )
+      default:
+        return <span className="text-xs text-gray-400">Completada</span>
     }
-    if (d.estado === 'DISPONIBLE') {
-      return (
-        <button
-          onClick={() => setDonacionAsignar(d)}
-          className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-teal text-navy hover:bg-teal/90 transition-colors"
-        >
-          Asignar
-        </button>
-      )
-    }
-    if (d.estado === 'ASIGNADA') {
-      return (
-        <button
-          onClick={() => confirmarEntrega(d.id)}
-          className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors"
-        >
-          Confirmar entrega
-        </button>
-      )
-    }
-    return <span className="text-xs text-gray-400">Completada</span>
   }
 
   const necesidadesActivas = necesidades.filter((n) => n.estado === 'ACTIVA')
@@ -137,7 +142,7 @@ export default function CoordinadorPanel() {
           </p>
         </div>
 
-        {/* Necesidades activas */}
+        {/* Necesidades */}
         <div className="flex flex-col gap-4">
           <h2 className="text-lg font-semibold text-navy">Necesidades</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -153,9 +158,9 @@ export default function CoordinadorPanel() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-navy">{n.categoria}</h3>
-                    <p className="text-sm text-gray-500">{n.comuna}</p>
+                    <p className="text-sm text-gray-500">{n.comuna?.nombre ?? `Comuna #${n.comunaId}`}
+                    </p>
                   </div>
-                  {/* Barra de cobertura */}
                   <div className="flex flex-col gap-1">
                     <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
                       <div
@@ -164,7 +169,7 @@ export default function CoordinadorPanel() {
                       />
                     </div>
                     <span className="text-xs text-gray-500">
-                      {n.cantCubierta} / {n.cantRequerida} ({porcentaje}%)
+                      {n.comuna?.nombre ?? `Comuna #${n.comunaId}`} · {n.cantCubierta}/{n.cantRequerida}
                     </span>
                   </div>
                 </div>
@@ -181,34 +186,40 @@ export default function CoordinadorPanel() {
             </h2>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 text-gray-500 text-left">
-                <tr>
-                  <th className="px-6 py-3 font-semibold">ID</th>
-                  <th className="px-6 py-3 font-semibold">Tipo</th>
-                  <th className="px-6 py-3 font-semibold">Cantidad</th>
-                  <th className="px-6 py-3 font-semibold">Origen</th>
-                  <th className="px-6 py-3 font-semibold">Estado</th>
-                  <th className="px-6 py-3 font-semibold">Acción</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {donaciones.map((d) => (
-                  <tr key={d.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 text-gray-700">#{d.id}</td>
-                    <td className="px-6 py-4 font-medium text-navy">{d.tipo}</td>
-                    <td className="px-6 py-4 text-gray-700">{d.cantidad} {d.unidad}</td>
-                    <td className="px-6 py-4 text-gray-700">{d.origen}</td>
-                    <td className="px-6 py-4">
-                      <span className={`text-xs font-semibold px-3 py-1 rounded-full ${coloresEstado[d.estado]}`}>
-                        {d.estado}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">{accionPorEstado(d)}</td>
+            {cargando ? (
+              <p className="text-sm text-gray-400 px-6 py-8">Cargando donaciones...</p>
+            ) : (
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50 text-gray-500 text-left">
+                  <tr>
+                    <th className="px-6 py-3 font-semibold">ID</th>
+                    <th className="px-6 py-3 font-semibold">Tipo</th>
+                    <th className="px-6 py-3 font-semibold">Cantidad</th>
+                    <th className="px-6 py-3 font-semibold">OT</th>
+                    <th className="px-6 py-3 font-semibold">Fecha</th>
+                    <th className="px-6 py-3 font-semibold">Estado</th>
+                    <th className="px-6 py-3 font-semibold">Acción</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {donaciones.map((d) => (
+                    <tr key={d.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4 text-gray-700">#{d.id}</td>
+                      <td className="px-6 py-4 font-medium text-navy">{d.tipo}</td>
+                      <td className="px-6 py-4 text-gray-700">{d.cantidad}</td>
+                      <td className="px-6 py-4 text-gray-500">{d.ot ?? '—'}</td>
+                      <td className="px-6 py-4 text-gray-500">{d.fecha}</td>
+                      <td className="px-6 py-4">
+                        <span className={`text-xs font-semibold px-3 py-1 rounded-full ${coloresEstado[d.estado]}`}>
+                          {d.estado}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">{accionPorEstado(d)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         </div>
 
@@ -221,7 +232,7 @@ export default function CoordinadorPanel() {
             <div>
               <h3 className="text-lg font-bold text-navy">Asignar donación</h3>
               <p className="text-sm text-gray-500">
-                {donacionAsignar.tipo} · {donacionAsignar.cantidad} {donacionAsignar.unidad}
+                {donacionAsignar.tipo} · {donacionAsignar.cantidad}
               </p>
             </div>
 
@@ -244,7 +255,7 @@ export default function CoordinadorPanel() {
                       </span>
                     </div>
                     <span className="text-xs text-gray-500">
-                      {n.comuna} · {n.cantCubierta}/{n.cantRequerida}
+                      {n.comuna?.nombre ?? `Comuna #${n.comunaId}`} · {n.cantCubierta}/{n.cantRequerida}
                     </span>
                   </button>
                 ))}

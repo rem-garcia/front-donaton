@@ -1,27 +1,10 @@
-import React, { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { Donacion } from '../types'
 
-// Datos de ejemplo en memoria — se reemplazan con el backend
-const donacionesIniciales: Donacion[] = [
-  {
-    id: 1, tipo: 'Ropa', cantidad: 50, unidad: 'unidades', origen: 'Campaña Las Condes', estado: 'RECIBIDA', fechaCreacion: '2026-06-15', usuarioId: 1,
-    necesidadId: 0,
-    centroAcopioId: 0
-  },
-  {
-    id: 2, tipo: 'Alimentos', cantidad: 30, unidad: 'cajas', origen: 'Donante particular', estado: 'DISPONIBLE', fechaCreacion: '2026-06-16', usuarioId: 1,
-    necesidadId: 0,
-    centroAcopioId: 0
-  },
-  {
-    id: 3, tipo: 'Agua', cantidad: 200, unidad: 'litros', origen: 'Empresa Aguas Andinas', estado: 'RECIBIDA', fechaCreacion: '2026-06-17', usuarioId: 1,
-    necesidadId: 0,
-    centroAcopioId: 0
-  },
-]
+const API = import.meta.env.VITE_API_URL
 
-// Colores por estado para los badges
 const coloresEstado: Record<Donacion['estado'], string> = {
+  PENDIENTE:   'bg-gray-100 text-gray-600',
   RECIBIDA:    'bg-blue-100 text-blue-700',
   DISPONIBLE:  'bg-teal/20 text-teal',
   ASIGNADA:    'bg-amber-100 text-amber-700',
@@ -30,39 +13,62 @@ const coloresEstado: Record<Donacion['estado'], string> = {
 }
 
 export default function VoluntarioPanel() {
-  const [donaciones, setDonaciones] = useState<Donacion[]>(donacionesIniciales)
-  const [form, setForm] = useState({
+  const [donaciones, setDonaciones] = useState<Donacion[]>([])
+  const [cargando, setCargando]     = useState(true)
+  const [form, setForm]             = useState({
     tipo: '',
     cantidad: '',
     unidad: '',
-    origen: '',
+    donanteNombre: '',
   })
+
+  useEffect(() => {
+    fetch(`${API}/api/donaciones`)
+      .then((r) => r.json())
+      .then((data) => setDonaciones(data))
+      .catch((e) => console.error('Error cargando donaciones:', e))
+      .finally(() => setCargando(false))
+  }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
 
-  const handleSubmit = () => {
-    if (!form.tipo || !form.cantidad || !form.unidad || !form.origen) {
-      alert('Por favor completa todos los campos.')
+  const handleSubmit = async () => {
+    if (!form.tipo || !form.cantidad) {
+      alert('Tipo y cantidad son obligatorios.')
       return
     }
 
-    const nueva: Donacion = {
-      id: donaciones.length + 1,
-      tipo: form.tipo,
-      cantidad: Number(form.cantidad),
-      unidad: form.unidad,
-      origen: form.origen,
-      estado: 'RECIBIDA',
-      fechaCreacion: new Date().toISOString().split('T')[0],
-      usuarioId: 1,
-      necesidadId: 0,
-      centroAcopioId: 0
-    }
+    try {
+      const res = await fetch(`${API}/api/donaciones`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tipo:          form.tipo,
+          cantidad:      Number(form.cantidad),
+          unidad:        form.unidad || 'unidades',
+          origen:        form.donanteNombre
+                           ? `Recibido de ${form.donanteNombre}`
+                           : 'Centro de acopio',
+          donanteNombre: form.donanteNombre || 'Anónimo',
+          donanteCorreo: 'sin-correo@donaton.cl',
+        }),
+      })
 
-    setDonaciones([nueva, ...donaciones])
-    setForm({ tipo: '', cantidad: '', unidad: '', origen: '' })
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || 'Error al registrar')
+      }
+
+      const nueva: Donacion = await res.json()
+      setDonaciones([nueva, ...donaciones])
+      setForm({ tipo: '', cantidad: '', unidad: '', donanteNombre: '' })
+
+    } catch (e) {
+      console.error(e)
+      alert('No se pudo registrar la donación.')
+    }
   }
 
   return (
@@ -77,7 +83,7 @@ export default function VoluntarioPanel() {
           </p>
         </div>
 
-        {/* Formulario de registro */}
+        {/* Formulario */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8">
           <h2 className="text-lg font-semibold text-navy mb-4">Registrar nueva donación</h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -107,10 +113,10 @@ export default function VoluntarioPanel() {
                          focus:outline-none focus:border-teal focus:ring-1 focus:ring-teal"
             />
             <input
-              name="origen"
-              value={form.origen}
+              name="donanteNombre"
+              value={form.donanteNombre}
               onChange={handleChange}
-              placeholder="Origen"
+              placeholder="Nombre donante (opcional)"
               className="border border-gray-300 rounded-lg px-4 py-2.5 text-sm
                          focus:outline-none focus:border-teal focus:ring-1 focus:ring-teal"
             />
@@ -124,7 +130,7 @@ export default function VoluntarioPanel() {
           </button>
         </div>
 
-        {/* Tabla de donaciones */}
+        {/* Tabla */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="p-6 border-b border-gray-100">
             <h2 className="text-lg font-semibold text-navy">
@@ -132,34 +138,38 @@ export default function VoluntarioPanel() {
             </h2>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 text-gray-500 text-left">
-                <tr>
-                  <th className="px-6 py-3 font-semibold">ID</th>
-                  <th className="px-6 py-3 font-semibold">Tipo</th>
-                  <th className="px-6 py-3 font-semibold">Cantidad</th>
-                  <th className="px-6 py-3 font-semibold">Origen</th>
-                  <th className="px-6 py-3 font-semibold">Fecha</th>
-                  <th className="px-6 py-3 font-semibold">Estado</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {donaciones.map((d) => (
-                  <tr key={d.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 text-gray-700">#{d.id}</td>
-                    <td className="px-6 py-4 font-medium text-navy">{d.tipo}</td>
-                    <td className="px-6 py-4 text-gray-700">{d.cantidad} {d.unidad}</td>
-                    <td className="px-6 py-4 text-gray-700">{d.origen}</td>
-                    <td className="px-6 py-4 text-gray-500">{d.fechaCreacion}</td>
-                    <td className="px-6 py-4">
-                      <span className={`text-xs font-semibold px-3 py-1 rounded-full ${coloresEstado[d.estado]}`}>
-                        {d.estado}
-                      </span>
-                    </td>
+            {cargando ? (
+              <p className="text-sm text-gray-400 px-6 py-8">Cargando donaciones...</p>
+            ) : (
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50 text-gray-500 text-left">
+                  <tr>
+                    <th className="px-6 py-3 font-semibold">ID</th>
+                    <th className="px-6 py-3 font-semibold">Tipo</th>
+                    <th className="px-6 py-3 font-semibold">Cantidad</th>
+                    <th className="px-6 py-3 font-semibold">OT</th>
+                    <th className="px-6 py-3 font-semibold">Fecha</th>
+                    <th className="px-6 py-3 font-semibold">Estado</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {donaciones.map((d) => (
+                    <tr key={d.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4 text-gray-700">#{d.id}</td>
+                      <td className="px-6 py-4 font-medium text-navy">{d.tipo}</td>
+                      <td className="px-6 py-4 text-gray-700">{d.cantidad}</td>
+                      <td className="px-6 py-4 text-gray-500">{d.ot ?? '—'}</td>
+                      <td className="px-6 py-4 text-gray-500">{d.fecha}</td>
+                      <td className="px-6 py-4">
+                        <span className={`text-xs font-semibold px-3 py-1 rounded-full ${coloresEstado[d.estado]}`}>
+                          {d.estado}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         </div>
 
