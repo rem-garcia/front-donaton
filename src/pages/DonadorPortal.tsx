@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+
 export default function DonadorPortal() {
   const navigate = useNavigate()
   const [form, setForm] = useState({
@@ -13,23 +15,50 @@ export default function DonadorPortal() {
     correo: '',
   })
   const [otGenerada, setOtGenerada] = useState<string | null>(null)
+  const [cargando, setCargando] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!form.tipo || !form.cantidad || !form.unidad || !form.nombre || !form.correo) {
-      alert('Por favor completa todos los campos.')
+      setError('Por favor completa todos los campos.')
       return
     }
 
-    // OT simulada — en el backend se generará y se enviará por correo
-    const numero = Math.floor(1000 + Math.random() * 9000)
-    const ot = `OT-2026-${numero}`
-    setOtGenerada(ot)
+    setCargando(true)
+    setError(null)
 
-    setForm({ tipo: '', cantidad: '', unidad: '', nombre: '', correo: '' })
+    try {
+      const response = await fetch(`${API_URL}/api/donaciones`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tipo: form.tipo,
+          cantidad: Number(form.cantidad),
+          unidad: form.unidad,
+          origen: `Donación de ${form.nombre}`,
+          donanteNombre: form.nombre,
+          donanteCorreo: form.correo,
+        }),
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Error al registrar la donación')
+      }
+
+      const donacion = await response.json()
+      setOtGenerada(donacion.ot ?? `OT pendiente - ID #${donacion.id}`)
+      setForm({ tipo: '', cantidad: '', unidad: '', nombre: '', correo: '' })
+
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error de conexión con el servidor')
+    } finally {
+      setCargando(false)
+    }
   }
 
   return (
@@ -43,22 +72,36 @@ export default function DonadorPortal() {
           <div className="text-center flex flex-col gap-2">
             <h1 className="text-4xl font-bold text-navy">Quiero donar</h1>
             <p className="text-gray-500">
-              Registra tu donación en un minuto. Recibirás un código de
-              seguimiento (OT) en tu correo para conocer su estado.
+              Registra tu donación en un minuto. Cuando la recibamos en el
+              centro de acopio, recibirás tu código de seguimiento (OT).
             </p>
           </div>
+
+          {/* Error */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4 text-sm">
+              ⚠️ {error}
+            </div>
+          )}
 
           {/* Confirmación con OT */}
           {otGenerada && (
             <div className="bg-teal/10 border border-teal rounded-2xl p-6 flex flex-col gap-2 text-center">
               <span className="text-navy font-semibold">¡Gracias por tu donación! 🎉</span>
               <p className="text-sm text-gray-600">
-                Tu código de seguimiento es:
+                Tu donación fue registrada. Cuando llegue al centro de acopio
+                y sea confirmada, recibirás tu código de seguimiento.
               </p>
-              <span className="text-2xl font-bold text-teal tracking-wider">{otGenerada}</span>
-              <p className="text-xs text-gray-500">
-                Te enviamos este código a tu correo. Guárdalo para consultar el
-                estado de tu donación.
+              {otGenerada.startsWith('OT-') && (
+                <>
+                  <p className="text-sm text-gray-600">Tu código es:</p>
+                  <span className="text-2xl font-bold text-teal tracking-wider">
+                    {otGenerada}
+                  </span>
+                </>
+              )}
+              <p className="text-xs text-gray-500 mt-1">
+                Guarda este código para consultar el estado de tu donación.
               </p>
               <button
                 onClick={() => navigate('/seguimiento')}
@@ -124,10 +167,12 @@ export default function DonadorPortal() {
 
             <button
               onClick={handleSubmit}
+              disabled={cargando}
               className="bg-teal text-navy font-semibold px-6 py-3 rounded-lg
-                         hover:bg-teal/90 transition-all duration-200 mt-2"
+                         hover:bg-teal/90 transition-all duration-200 mt-2
+                         disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Registrar donación
+              {cargando ? 'Registrando...' : 'Registrar donación'}
             </button>
           </div>
 
