@@ -23,7 +23,7 @@ export default function Login() {
       return
     }
 
-    // ⚠️ Simulación temporal — se reemplaza cuando exista el backend
+    //imulación temporal — se reemplaza cuando exista el backend
     const tokenFalso = 'token-demo-' + rol.toLowerCase()
     const usuarioFalso = {
       id: 1,
@@ -31,6 +31,7 @@ export default function Login() {
       apellido: 'Demo',
       correo,
       rol,
+      fecha: new Date().toISOString(),
     }
 
     login(tokenFalso, usuarioFalso)
@@ -79,7 +80,7 @@ export default function Login() {
           />
         </div>
 
-        {/* ⚠️ Selector de rol temporal — quitar cuando el backend devuelva el rol */}
+        {/*Selector de rol temporal — quitar cuando el backend devuelva el rol */}
         <div className="flex flex-col gap-2">
           <label className="text-sm font-semibold text-navy">
             Entrar como <span className="text-gray-400 font-normal">(temporal)</span>
