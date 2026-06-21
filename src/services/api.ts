@@ -1,5 +1,6 @@
 /**
  * @module services/api
+ * @author Ricardo Díaz
  * @description Configuración central de Axios para las peticiones HTTP al backend.
  *
  * Crea una instancia de Axios preconfigurada con una URL que se toma de la variable de entorno VITE_API_URL.

@@ -1,5 +1,6 @@
 /** 
   @module types/index
+  @author Remi García
   @description: Interfaces TypeScript que definen la estructura de los datos
   que se intercambian entre el frontend y el backend de Donaton.
  
