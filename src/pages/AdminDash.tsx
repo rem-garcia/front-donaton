@@ -1,15 +1,64 @@
+/**
+ * @module pages/AdminDash
+ * @description Página principal del panel de administración de Donaton.
+ *
+ * Esta página corresponde al caso de uso UC15 (Ver dashboard) y es accesible
+ * exclusivamente para el actor Admin. Muestra una vista general del estado
+ * del sistema con métricas en tiempo real y accesos directos a las secciones
+ * de gestión administrativa.
+ *
+ * Métricas que se muestran:
+ * - Total de donaciones registradas en el sistema.
+ * - Necesidades activas pendientes de cobertura.
+ * - Donaciones que completaron el ciclo (estado ENTREGADA).
+ * - Total de usuarios internos registrados.
+ *
+ * Accesos directos disponibles:
+ * - Gestionar usuarios (UC16) → /admin-usuarios
+ * - Gestionar centros de acopio (UC18) → /admin-centros
+ *
+ * Comunicación con el backend:
+ * - GET /api/donaciones → lista completa de donaciones para calcular métricas.
+ * - GET /api/necesidades → lista de necesidades para calcular cuántas están activas.
+ * - GET /api/usuarios → lista de usuarios para mostrar el total del sistema.
+ * Las tres peticiones se lanzan en paralelo al cargar la página para reducir el tiempo de espera.
+ */
+
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import type { Donacion, Necesidad, Usuario } from '../types'
 
+/** URL base del backend tomada de la variable de entorno VITE_API_URL del archivo .env */
 const API = import.meta.env.VITE_API_URL
 
+/**
+ * Panel de administración del sistema Donaton.
+ * Carga donaciones, necesidades y usuarios en paralelo al montar el componente,
+ * calcula las métricas del sistema y las presenta en tarjetas visuales.
+ * Mientras los datos cargan, muestra '...' en lugar de los números.
+ *
+ * @returns Página completa con tarjetas de métricas y accesos a gestión.
+ */
 export default function AdminDash() {
-  const [donaciones, setDonaciones]   = useState<Donacion[]>([])
-  const [necesidades, setNecesidades] = useState<Necesidad[]>([])
-  const [usuarios, setUsuarios]       = useState<Usuario[]>([])
-  const [cargando, setCargando]       = useState(true)
+  /** Lista de donaciones cargadas desde el backend para calcular métricas. */
+  const [donaciones, setDonaciones] = useState<Donacion[]>([])
 
+  /** Lista de necesidades cargadas desde el backend para calcular cuántas están activas. */
+  const [necesidades, setNecesidades] = useState<Necesidad[]>([])
+
+  /** Lista de usuarios internos del sistema para mostrar el total. */
+  const [usuarios, setUsuarios] = useState<Usuario[]>([])
+
+  /** true mientras las tres peticiones al backend están en curso. */
+  const [cargando, setCargando] = useState(true)
+
+  /**
+   * Efecto que se ejecuta una sola vez al montar el componente.
+   * Lanza tres peticiones al backend en paralelo usando Promise.all,
+   * lo que significa que las tres se ejecutan al mismo tiempo en vez de
+   * esperar una para iniciar la siguiente. Cuando las tres terminan,
+   * actualiza los estados correspondientes de una sola vez.
+   */
   useEffect(() => {
     Promise.all([
       fetch(`${API}/api/donaciones`).then((r) => r.json()),
@@ -25,11 +74,23 @@ export default function AdminDash() {
       .finally(() => setCargando(false))
   }, [])
 
-  const totalDonaciones    = donaciones.length
-  const necesidadesActivas = necesidades.filter((n) => n.estado === 'ACTIVA').length
-  const entregadas         = donaciones.filter((d) => d.estado === 'ENTREGADA').length
-  const totalUsuarios      = usuarios.length
+  /** Número total de donaciones en el sistema. */
+  const totalDonaciones = donaciones.length
 
+  /** Número de necesidades en estado ACTIVA (pendientes de cobertura). */
+  const necesidadesActivas = necesidades.filter((n) => n.estado === 'ACTIVA').length
+
+  /** Número de donaciones que completaron el ciclo (estado ENTREGADA). */
+  const entregadas = donaciones.filter((d) => d.estado === 'ENTREGADA').length
+
+  /** Número total de usuarios internos registrados en el sistema. */
+  const totalUsuarios = usuarios.length
+
+  /**
+   * Configuración de las tarjetas de métricas del dashboard.
+   * Cada objeto define el texto, valor calculado, color y ícono SVG de una tarjeta.
+   * El valor muestra '...' mientras los datos están cargando.
+   */
   const metricas = [
     {
       label: 'Total de donaciones',
@@ -61,11 +122,13 @@ export default function AdminDash() {
     <div className="min-h-screen bg-gray-100 px-6 py-10">
       <div className="max-w-6xl mx-auto flex flex-col gap-8">
 
+        {/* Encabezado del panel */}
         <div className="flex flex-col gap-1">
           <h1 className="text-3xl font-bold text-navy">Panel de Administración</h1>
           <p className="text-gray-500 text-sm">Vista general del sistema y accesos a la gestión.</p>
         </div>
 
+        {/* Tarjetas de métricas — cuatro indicadores clave del sistema */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {metricas.map((m) => (
             <div key={m.label} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col gap-3">
@@ -80,10 +143,12 @@ export default function AdminDash() {
           ))}
         </div>
 
+        {/* Accesos directos a las secciones de gestión administrativa */}
         <div className="flex flex-col gap-4">
           <h2 className="text-lg font-semibold text-navy">Gestión</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
+            {/* Acceso a gestión de usuarios (UC16) */}
             <Link
               to="/admin-usuarios"
               className="group bg-white rounded-2xl shadow-sm border border-gray-100 p-6
@@ -107,6 +172,7 @@ export default function AdminDash() {
               </svg>
             </Link>
 
+            {/* Acceso a gestión de centros de acopio (UC18) */}
             <Link
               to="/admin-centros"
               className="group bg-white rounded-2xl shadow-sm border border-gray-100 p-6
