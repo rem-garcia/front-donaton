@@ -1,5 +1,7 @@
 /**
  * @module components/ProtegeRutas
+ * @author Remi García
+ * @author Ricardo Diaz
  * @description Componente guardia de rutas para el sistema de autenticación de Donaton.
  *@
  * Implementa el patrón Route Guard con verificación en dos niveles:

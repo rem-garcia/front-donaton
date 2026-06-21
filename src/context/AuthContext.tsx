@@ -1,5 +1,6 @@
 /**
  * @module context/AuthContext
+ * @author Remi García
  * @description Contexto global de autenticación para el sistema Donaton.
  *
  * Implementa el patrón Context API de React para compartir el estado de sesión
