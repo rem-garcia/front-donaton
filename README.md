@@ -1,90 +1,77 @@
-# 🫶 Donaton — Frontend
+# Donaton — Frontend
 
-Plataforma digital de coordinación humanitaria. Este repositorio corresponde al **Frontend** del sistema Donaton, construido con React + Vite + TypeScript + Tailwind CSS.
+Repositorio del frontend del sistema Donaton, construido con React, Vite, TypeScript y Tailwind CSS.
 
 ---
 
-## ⚠️ Requisito previo importante
+## Requisito previo importante
 
-Este proyecto **requiere que el backend esté corriendo** para funcionar correctamente. Antes de levantar el frontend, debes clonar y levantar el repositorio del backend.
+Este proyecto requiere que el backend este corriendo para funcionar correctamente.
+Antes de levantar el frontend, debes tener el backend configurado y ejecutandose.
 
-**Se recomienda trabajar ambos proyectos dentro de una misma carpeta raíz**, por ejemplo `donaton/`:
+Se recomienda trabajar ambos proyectos dentro de una misma carpeta raiz llamada `donaton/`:
 
 ```
 donaton/
-├── front-donaton/       ← este repositorio
-└── backend-donaton/     ← repositorio del backend (clonar también)
+├── front-donaton/        <- este proyecto
+└── backend-donaton/      <- debe estar presente y corriendo
 ```
 
 ---
 
-## 🧰 Requisitos del sistema
+## Herramientas requeridas
 
-| Herramienta | Versión mínima | Descarga |
-|-------------|---------------|----------|
-| Node.js | 20.x o superior | https://nodejs.org |
-| npm | 10.x o superior (viene con Node) | — |
-| Git | 2.x o superior | https://git-scm.com |
-| Docker Desktop | 4.x o superior | https://www.docker.com/products/docker-desktop |
-| Navegador | Chrome 120+ / Firefox 121+ / Edge 120+ | — |
+| Herramienta    | Version minima | Descarga                               |
+|----------------|----------------|----------------------------------------|
+| Node.js        | 20.x           | https://nodejs.org                     |
+| npm            | 10.x           | Incluido con Node.js                   |
+| Git            | 2.x            | https://git-scm.com                    |
+| Docker Desktop | 4.x            | https://www.docker.com/products/docker-desktop |
+| Navegador      | Chrome 120+ / Firefox 121+ / Edge 120+        |
 
-> **Nota:** Docker Desktop es necesario para levantar la base de datos MySQL que usa el backend. Debe estar **abierto y corriendo** antes de levantar el backend.
+Docker Desktop es necesario para la base de datos MySQL que usa el backend.
+Debe estar abierto antes de levantar el backend.
 
----
-
-## 📦 Instalación y configuración
-
-### Paso 1 — Crear la carpeta raíz y clonar ambos repositorios
+Para verificar que Node.js esta instalado:
 
 ```bash
-# Crear carpeta raíz del proyecto
-mkdir donaton
-cd donaton
-
-# Clonar el frontend (este repositorio)
-git clone https://github.com/rem-garcia/front-donaton.git
-
-# Clonar el backend (OBLIGATORIO para que el frontend funcione)
-git clone https://github.com/ric-diazs/backend-donaton.git
+node -v
+npm -v
 ```
 
-Al terminar, tu estructura debe verse así:
+---
 
-```
-donaton/
-├── front-donaton/
-└── backend-donaton/
-```
+## Instalacion
 
-### Paso 2 — Instalar dependencias del frontend
+### Paso 1 — Instalar dependencias
 
 ```bash
 cd front-donaton
 npm install
 ```
 
-### Paso 3 — Configurar variables de entorno
+### Paso 2 — Crear el archivo de variables de entorno
 
-Crea un archivo `.env` en la raíz de `front-donaton/`:
+Crea un archivo `.env` en la raiz de la carpeta `front-donaton/` con el siguiente contenido:
 
 ```env
 VITE_API_URL=http://localhost:3000
 ```
 
-> Esta variable le indica al frontend dónde está el backend. Si el backend corre en un puerto distinto, ajusta el valor.
+Este archivo no esta incluido en el proyecto por seguridad y debe crearse manualmente.
 
-### Paso 4 — Levantar el backend primero
+### Paso 3 — Levantar el backend primero
 
-Antes de correr el frontend, **el backend debe estar corriendo**. Sigue las instrucciones del `README.md` del repositorio `backend-donaton`.
+Antes de iniciar el frontend, el backend debe estar corriendo.
+Sigue las instrucciones del README del repositorio `backend-donaton/`.
 
-### Paso 5 — Levantar el frontend
+### Paso 4 — Levantar el servidor de desarrollo
 
 ```bash
-# Desde la carpeta front-donaton/
 npm run dev
 ```
 
-El frontend estará disponible en:
+El frontend estara disponible en:
 
 ```
 http://localhost:5173
@@ -92,97 +79,87 @@ http://localhost:5173
 
 ---
 
-## 🗂️ Estructura del proyecto
+## Paginas disponibles
 
-```
-front-donaton/
-├── src/
-│   ├── components/         # Componentes reutilizables (Navbar, Footer, etc.)
-│   ├── context/            # AuthContext — manejo de sesión
-│   ├── hooks/              # Custom hooks
-│   ├── pages/              # Páginas por ruta
-│   │   ├── Landing.tsx
-│   │   ├── Login.tsx
-│   │   ├── AdminDash.tsx
-│   │   ├── CoordinadorPanel.tsx
-│   │   ├── VoluntarioPanel.tsx
-│   │   ├── DonadorPortal.tsx
-│   │   ├── Contacto.tsx
-│   │   └── Seguimiento.tsx
-│   ├── services/           # api.ts — configuración de Axios
-│   ├── types/              # Interfaces TypeScript
-│   └── App.tsx             # Rutas con React Router
-├── public/
-│   └── image/              # Imágenes y logos
-├── .env                    # Variables de entorno (crear manualmente)
-├── tailwind.config.js      # Configuración de colores personalizados
-└── vite.config.ts
-```
+| Ruta              | Descripcion                          | Acceso                        |
+|-------------------|--------------------------------------|-------------------------------|
+| /                 | Pagina de inicio publica             | Publico                       |
+| /donar            | Portal de registro de donaciones     | Publico                       |
+| /seguimiento      | Consulta de donacion por codigo OT   | Publico                       |
+| /contacto         | Formulario de contacto               | Publico                       |
+| /login            | Inicio de sesion                     | Publico                       |
+| /admin            | Panel del administrador              | Solo Admin                    |
+| /coordinador      | Panel del coordinador                | Admin y Coordinador           |
+| /voluntario       | Panel del voluntario                 | Admin, Coordinador, Voluntario|
 
 ---
 
-## 🧭 Rutas disponibles
+## Roles del sistema para pruebas
 
-| Ruta | Descripción | Acceso |
-|------|-------------|--------|
-| `/` | Landing page | Público |
-| `/donar` | Portal del donante | Público |
-| `/seguimiento` | Consulta de donación por OT | Público |
-| `/contacto` | Formulario de contacto | Público |
-| `/login` | Inicio de sesión | Público |
-| `/admin` | Panel del administrador | Solo Admin |
-| `/coordinador` | Panel del coordinador | Admin / Coordinador |
-| `/voluntario` | Panel del voluntario | Todos los roles internos |
+El login utiliza un selector de rol temporal para el PMV.
+Selecciona el rol deseado al iniciar sesion:
+
+| Rol            | Panel al que redirige |
+|----------------|-----------------------|
+| Administrador  | /admin                |
+| Coordinador    | /coordinador          |
+| Voluntario     | /voluntario           |
 
 ---
 
-## 👤 Roles del sistema (para pruebas)
-
-Durante el desarrollo, el login utiliza un **selector de rol temporal** (sin backend de autenticación). Selecciona el rol deseado al iniciar sesión:
-
-| Rol | Panel al que redirige |
-|-----|-----------------------|
-| Administrador | `/admin` |
-| Coordinador | `/coordinador` |
-| Voluntario | `/voluntario` |
-
----
-
-## 🛠️ Scripts disponibles
+## Scripts disponibles
 
 ```bash
-npm run dev       # Levanta el servidor de desarrollo en localhost:5173
-npm run build     # Genera el build de producción en /dist
-npm run preview   # Previsualiza el build de producción
+npm run dev        # Levanta el servidor de desarrollo en localhost:5173
+npm run build      # Genera el build de produccion en la carpeta /dist
+npm run preview    # Previsualiza el build de produccion
 ```
 
 ---
 
-## 🐳 Despliegue con Docker
+## Notas importantes
 
-El frontend incluye un `Dockerfile` y un `docker-compose.yml` para despliegue en contenedor.
+- Si el frontend no puede conectar al backend y aparece el error "failed to fetch",
+  verifica que el backend este corriendo en el puerto 3000 y que el archivo `.env`
+  tenga `VITE_API_URL=http://localhost:3000`.
 
-```bash
-# Construir y levantar el contenedor del frontend
-docker compose up --build
-```
+- Si cambias el archivo `.env`, debes reiniciar el servidor con `Ctrl+C` y volver
+  a ejecutar `npm run dev` para que Vite tome los nuevos valores.
 
-> Para el despliegue completo (frontend + backend + base de datos), usar el `docker-compose.yml` raíz del proyecto orquestador.
-
----
-
-## 🔗 Repositorio relacionado
-
-| Repositorio | Descripción |
-|-------------|-------------|
-| [backend-donaton](https://github.com/ric-diazs/backend-donaton) | Backend Next.js — API de donaciones |
+- El frontend fue construido con Vite 8 y React 19. No usar versiones anteriores
+  de Node.js ya que pueden generar errores de compatibilidad.
 
 ---
 
-## 🏫 Contexto académico
+## Stack tecnologico
 
-Proyecto desarrollado para la asignatura **GPY1101 — Evaluación de Proyectos de Software**, DuocUC, 2026.
+| Tecnologia    | Version  | Uso                                    |
+|---------------|----------|----------------------------------------|
+| React         | 19.x     | Libreria de interfaz de usuario        |
+| Vite          | 8.x      | Empaquetador y servidor de desarrollo  |
+| TypeScript    | 5.x      | Tipado estatico                        |
+| Tailwind CSS  | 3.x      | Estilos y diseño visual                |
+| React Router  | 6.x      | Enrutamiento entre paginas             |
+| Axios         | 1.x      | Peticiones HTTP al backend             |
 
-**Equipo:**
-- Remi García ([@rem-garcia](https://github.com/rem-garcia))
-- Ricardo Díaz ([@ric-diazs](https://github.com/ric-diazs))
+---
+
+## Repositorio relacionado
+
+| Proyecto        | Descripcion                        |
+|-----------------|------------------------------------|
+| backend-donaton | Backend Next.js + Prisma + MySQL   |
+
+---
+
+## Contexto academico
+
+Proyecto desarrollado para la asignatura GPY1101 — Evaluacion de Proyectos de Software, DuocUC, 2026.
+
+Equipo:
+- Remi Garcia
+- Ricardo Diaz
+
+## Comentarios Adicionales
+
+Aunque el archivo .env no se encuentra dentro del archivo gitignore se descarto para que el profesor pueda llegar y levantar el proyecto de manera local. Se entiende que en las buenas practicas esta no es la mas adecuada elaborar en entornos de produccion.
