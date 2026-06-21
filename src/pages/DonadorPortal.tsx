@@ -1,5 +1,7 @@
 /**
  * @module pages/DonadorPortal
+ * @author Remi García
+ * @author Ricardo Diaz
  * @description Portal público de registro de donaciones para el donante externo.
  
  Esta página es accesible sin autenticación y representa el punto de entrada del donante al sistema Donaton. Corresponde al caso de uso UC3 del diagrama

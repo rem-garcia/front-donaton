@@ -1,9 +1,29 @@
+/**
+ * @module components/MisionVision
+ * @author Ricardo Díaz
+ * @description Componente de sección misión y visión de la fundación Donaton.
+ *
+ * Presenta el propósito institucional de Donaton mediante dos tarjetas con
+ * fondo navy, ícono SVG, título, descripción e imagen ilustrativa.
+ * Se usa en la Landing page como sección de propósito organizacional.
+ *
+ * Misión: conectar donaciones con necesidades reales mediante trazabilidad digital.
+ * Visión: ser la red de coordinación humanitaria de referencia en Chile,
+ * integrando instituciones públicas, privadas y organismos internacionales.
+ */
+
+/**
+ * Sección de misión y visión de la fundación Donaton.
+ * Presenta dos tarjetas en paralelo con fondo navy y acentos en teal.
+ *
+ * @returns Sección con encabezado y dos tarjetas de misión y visión.
+ */
 export default function MisionVision() {
   return (
     <section id="mision" className="bg-white py-24 px-6">
       <div className="max-w-6xl mx-auto flex flex-col gap-12">
 
-        {/* Encabezado */}
+        {/* Encabezado de la sección */}
         <div className="text-center flex flex-col gap-3">
           <h2 className="text-4xl font-bold text-navy">
             Nuestro propósito
@@ -14,14 +34,13 @@ export default function MisionVision() {
           </p>
         </div>
 
-        {/* Tarjetas */}
+        {/* Grilla de dos tarjetas: misión y visión */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-          {/* Misión */}
+          {/* Tarjeta de Misión */}
           <div className="bg-navy rounded-2xl p-10 flex flex-col gap-5">
-            {/* Imagen */}
-           
             <div className="flex items-center gap-3">
+              {/* Ícono de rayo — representa acción e impacto inmediato */}
               <div className="w-12 h-12 rounded-xl bg-teal/15 flex items-center justify-center">
                 <svg className="w-6 h-6 text-teal" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -35,18 +54,17 @@ export default function MisionVision() {
               digital trazable, reduciendo el desperdicio y asegurando que cada
               aporte llegue de forma transparente a quienes más lo necesitan.
             </p>
-             <img
+            <img
               src="/image/mision.png"
               alt="Misión"
               className="w-full h-30 object-cover rounded-xl"
             />
           </div>
 
-          {/* Visión */}
+          {/* Tarjeta de Visión */}
           <div className="bg-navy rounded-2xl p-10 flex flex-col gap-5">
-            {/* Imagen */}
-            
             <div className="flex items-center gap-3">
+              {/* Ícono de ojo — representa alcance y visión de largo plazo */}
               <div className="w-12 h-12 rounded-xl bg-teal/15 flex items-center justify-center">
                 <svg className="w-6 h-6 text-teal" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}

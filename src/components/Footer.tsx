@@ -1,14 +1,37 @@
+/**
+ * @module components/Footer
+ * @author Remi García, Ricardo Díaz
+ * @description Pie de página global del sistema Donaton.
+ *
+ * Componente que se renderiza en todas las páginas públicas del sistema
+ * (Landing, DonadorPortal, Seguimiento, Contacto). Proporciona navegación
+ * secundaria, información de contacto institucional y acceso rápido al sistema.
+ *
+ * Estructura del Footer:
+ * - Columna de marca: nombre y descripción breve de la plataforma.
+ * - Columna de navegación: enlaces a secciones de la Landing y al portal del donante.
+ * - Columna de contacto: correo, ubicación y acceso directo al login del sistema.
+ * - Barra inferior: copyright y enlaces a términos y privacidad.
+ */
+
 import { Link } from 'react-router-dom'
 
+/**
+ * Pie de página global con navegación secundaria e información institucional.
+ * Usa fondo navy con texto en tonos grises y acentos en teal para mantener
+ * la identidad visual de la plataforma.
+ *
+ * @returns Elemento footer con cuatro columnas y barra inferior de copyright.
+ */
 export default function Footer() {
   return (
     <footer className="bg-navy text-white">
       <div className="max-w-6xl mx-auto px-6 py-16">
 
-        {/* Columnas */}
+        {/* Grilla de cuatro columnas */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
 
-          {/* Marca */}
+          {/* Columna de marca — ocupa dos columnas en escritorio */}
           <div className="md:col-span-2 flex flex-col gap-4">
             <span className="text-2xl font-bold tracking-widest">DONATON</span>
             <p className="text-gray-400 text-sm leading-relaxed max-w-sm">
@@ -18,7 +41,7 @@ export default function Footer() {
             </p>
           </div>
 
-          {/* Enlaces */}
+          {/* Columna de navegación con anclas a secciones de la Landing */}
           <div className="flex flex-col gap-4">
             <h4 className="text-sm font-semibold text-white uppercase tracking-wider">
               Navegación
@@ -37,13 +60,14 @@ export default function Footer() {
             </Link>
           </div>
 
-          {/* Contacto */}
+          {/* Columna de contacto con acceso directo al login */}
           <div className="flex flex-col gap-4">
             <h4 className="text-sm font-semibold text-white uppercase tracking-wider">
               Contacto
             </h4>
             <span className="text-gray-400 text-sm">contacto@donaton.cl</span>
             <span className="text-gray-400 text-sm">Santiago, Chile</span>
+            {/* Acceso directo al sistema para usuarios internos */}
             <Link
               to="/login"
               className="text-teal text-sm font-semibold hover:underline mt-2"
@@ -54,7 +78,7 @@ export default function Footer() {
 
         </div>
 
-        {/* Línea divisoria */}
+        {/* Barra inferior con copyright y enlaces legales */}
         <div className="border-t border-white/10 mt-12 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <span className="text-gray-500 text-xs">
             © 2026 Donaton. Todos los derechos reservados.
